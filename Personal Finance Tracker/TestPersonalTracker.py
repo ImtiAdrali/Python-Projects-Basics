@@ -4,8 +4,8 @@ import unittest
 import os
 import json
 from transaction import create_transaction, validate_transaction
-from storage import save_transaction, load_transaction, DATA_FILE
-from analytics import calculate_total_by_type, calculate_balance, get_transaction_by_category, filter_by_month
+from storage import save_transactions, load_transactions, DATA_FILE
+from analytics import calculate_total_by_type, calculate_balance, get_transactions_by_category, filter_by_month
 
 class TestTransaction(unittest.TestCase):
     
@@ -13,9 +13,9 @@ class TestTransaction(unittest.TestCase):
         """ Test creating a valid transaction"""
         trans = create_transaction(50.0, "Food", "expense", "Lunch")
 
-        self.assertEqual(trans["amount"] == 50.0)
-        self.assertEqual("category", "Food")
-        self.assertEqual("type", "expense")
+        self.assertEqual(trans["amount"], 50.0)
+        self.assertEqual(trans["category"], "Food")
+        self.assertEqual(trans["type"], "expense")
         self.assertIn("id", trans)
         self.assertIn("date", trans)
 
@@ -60,8 +60,8 @@ class TestStorage(unittest.TestCase):
         trans1 = create_transaction(50, "Food", "expense")
         trans2 = create_transaction(1000, "Salary", "income")
 
-        save_transaction([trans1, trans2])
-        loaded = load_transaction()
+        save_transactions([trans1, trans2])
+        loaded = load_transactions()
 
         self.assertEqual(len(loaded), 2)
         self.assertEqual(loaded[0]["amount"], 50)
@@ -71,7 +71,7 @@ class TestStorage(unittest.TestCase):
     def test_load_empty_file(self):
         """ Test loading when no file exists. """
 
-        loaded = load_transaction()
+        loaded = load_transactions()
         self.assertEqual(loaded, [])
 
 class TestAnalytics(unittest.TestCase):
@@ -110,11 +110,11 @@ class TestAnalytics(unittest.TestCase):
     def test_get_transactions_by_category(self):
         """ Test grouping by category. """
 
-        categories = get_transaction_by_category(self.transactions)
+        categories = get_transactions_by_category(self.transactions)
 
         self.assertEqual(categories["Food"]["total"], 70)
         self.assertEqual(categories["Food"]["count"], 2)
-        self.assertEqual(categories["transport"]["total"], 30)
+        self.assertEqual(categories["Transport"]["total"], 30)
 
 
 if __name__ == "__main__":
