@@ -63,3 +63,65 @@ def fetch_page(url, timeout = 10, retries = 3):
                 raise
             
     return requests.RequestException(f"Failed to fetch {url} after {retries} attempts.")
+
+
+def fetch_multiple_pages(urls, delay = 1):
+    """
+        Fetch multiple pages with polite delays.
+
+        Args:
+            urls (list): list of urls to fetch
+            delay (int): Delay between requests in seconds
+
+        Returns:
+            dict: { url: html_content } for successful fetches  
+    """
+
+    results = {}
+    
+    for i, url in enumerate(urls):
+        try:
+            html = fetch_page(url)
+            results[url] = html
+
+            if i < len(urls) - 1:
+                sleep_time = delay + random.uniform(0, 1)
+                print(f"Waiting {sleep_time:.1f}s before next request...")
+                sleep(sleep_time)
+
+        except Exception as e:
+            print(f"Failed to fetch {url}: {e}")
+            results[url] = None
+
+
+    return results
+
+
+def check_robots_txt(domain):
+    """
+        Check if scraping is allowed (basic check).
+
+        Args:
+            domain (str): Domain to check (e.g. 'example.com')
+
+        Returns:
+            bool: True if appears to be allowed
+
+    """
+
+    try:
+        robot_url = f"https://{domain}/robots.txt"
+        response = requrests.get(robot_url, timeout = 5)
+
+        if response.status_code == 200:
+            print(f"Found robots.txt for {domain}")
+            print("Please review robots.txt befor scraping:")
+            print(response.text[:500])
+            return True
+
+        print(f"No robots.txt found for {domain}")
+        return True
+
+    except Exception as ex:
+        print(f"Could not check robots.txt: {ex}")
+        return True
